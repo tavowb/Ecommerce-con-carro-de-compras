@@ -6,7 +6,6 @@ import Swal from 'sweetalert2'
 
 export function Cart () {
   const cartCheckBoxId = useId()
-  const divsw = useId()
   const { cart, clearCart, addToCart, decreaseQuantity } = useCart()
   const [total, setTotal] = useState(cart.reduce((acc, product) => acc + product.price * product.quantity, 0))
 
@@ -17,7 +16,7 @@ export function Cart () {
   function CartItem ({ thumbnail, title, price, quantity, addToCart, decreaseQuantity }) {
     return (
       <li>
-        <img loading='lazy' src={thumbnail} alt={title} />
+        <img src={thumbnail} alt={title} />
         <div>
           <strong> {title}</strong> - ${price}
         </div>
@@ -33,12 +32,20 @@ export function Cart () {
   }
 
   function handleBuyCart () {
+    if (cart.length === 0) {
+      Swal.fire({
+        icon: 'question',
+        title: 'Oops...',
+        text: 'No hay productos en el carrito!'
+      })
+      return
+    }
     const swalWithBootstrapButtons = Swal.mixin({
       customClass: {
         confirmButton: '',
         cancelButton: 'btn btn-danger'
       },
-      buttonsStyling: false
+      buttonsStyling: true
     })
 
     swalWithBootstrapButtons.fire({
@@ -81,24 +88,25 @@ export function Cart () {
 
   return (
     <>
-
       <label htmlFor={cartCheckBoxId} className='cart-button'><CartIcon /></label>
-
       <input id={cartCheckBoxId} type='checkbox' hidden />
-
       <aside className='cart'>
-        <div id={divsw} className='cart-content'>
+        <div className='cart-content'>
           <h2>Mi Carrito</h2>
           <hr />
           <ul>
-            {cart.map(product => (
-              <CartItem
-                key={product.id}
-                addToCart={() => addToCart(product)}
-                decreaseQuantity={() => decreaseQuantity(product)}
-                {...product}
-              />
-            ))}
+            {
+              cart.length === 0
+                ? <li className='empty-cart'>No hay productos en el carrito</li>
+                : cart.map(product => (
+                  <CartItem
+                    key={product.id}
+                    addToCart={() => addToCart(product)}
+                    decreaseQuantity={() => decreaseQuantity(product)}
+                    {...product}
+                  />
+                ))
+            }
           </ul>
           <hr />
           <div className='total'>
@@ -107,14 +115,10 @@ export function Cart () {
 
           <footer>
             <button className='BuyCart' onClick={handleBuyCart}><CartIcon /> </button>
-            <strong>|</strong>
             <button className='ClearCart' onClick={clearCart}> <ClearCartIcon /> </button>
           </footer>
-
         </div>
-
       </aside>
-
     </>
   )
 }
